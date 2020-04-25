@@ -1,0 +1,5 @@
+PKGNAM="tracker-miners"
+VERSION="2.3.2"
+HOMEPAGE="https://wiki.gnome.org/Projects/Tracker"
+DOWNLOAD="http://ftp.gnome.org/pub/gnome/sources/tracker-miners/2.3/tracker-miners-2.3.2.tar.xz"
+MD5SUM="f312f2f6f9098bf6cdd0f02210e9b81d"

@@ -1,16 +1,15 @@
 #!/bin/sh
 
-# Slackware build script for dconf-editor
-# Copyright 2020 Frank Honolka <slackernetuk@gmail.com>
+# Copyright 2016 Eugene Wissner, Dachau, Germanz
 # All rights reserved.
 #
 # Redistribution and use of this script, with or without modification, is
 # permitted provided that the following conditions are met:
 #
 # 1. Redistributions of this script must retain the above copyright
-#    notice, this list of conditions and the following disclaimer.
+# notice, this list of conditions and the following disclaimer.
 #
-# THIS SOFTWARE IS PROVIDED BY THE AUTHOR ''AS IS'' AND ANY EXPRESS OR IMPLIED
+# THIS SOFTWARE IS PROVIDED BY THE AUTHOR "AS IS" AND ANY EXPRESS OR IMPLIED
 # WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
 # MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO
 # EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
@@ -21,18 +20,21 @@
 # OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-PKGNAM=dconf-editor
-VERSION=${VERSION:-3.32.0}
+PKGNAM=gnome-music
+VERSION=${VERSION:-$(echo $PKGNAM-*.tar.?z* | rev | cut -f 3- -d . | cut -f 1 -d - | rev)}
 BUILD=${BUILD:-1}
 TAG=${TAG:-_dlack}
 
+# Automatically determine the architecture we're building on:
 if [ -z "$ARCH" ]; then
   case "$( uname -m )" in
-    i?86) ARCH=i586 ;;
-    arm*) ARCH=arm ;;
-       *) ARCH=$( uname -m ) ;;
+    i?86) export ARCH=i586 ;;
+    arm*) export ARCH=arm ;;
+        *) export ARCH=$( uname -m ) ;;
   esac
 fi
+
+NUMJOBS=${NUMJOBS:-"-j4"}
 
 CWD=$(pwd)
 TMP=${TMP:-/tmp/dlackware}
@@ -53,13 +55,13 @@ else
   LIBDIRSUFFIX=""
 fi
 
-set -e
+set -e # Exit on most errors
 
 rm -rf $PKG
 mkdir -p $TMP $PKG $OUTPUT
 cd $TMP
 rm -rf $PKGNAM-$VERSION
-tar xvf $CWD/$PKGNAM-$VERSION.tar.xz
+tar xvf $CWD/$PKGNAM-$VERSION.tar.?z*
 cd $PKGNAM-$VERSION
 chown -R root:root .
 find -L . \
@@ -68,39 +70,51 @@ find -L . \
  \( -perm 666 -o -perm 664 -o -perm 640 -o -perm 600 -o -perm 444 \
  -o -perm 440 -o -perm 400 \) -exec chmod 644 {} \;
 
-mkdir build
-cd build
-
-CFLAGS="$SLKCFLAGS" \
-CXXFLAGS="$SLKCFLAGS" \
-meson .. \
+./configure \
   --prefix=/usr \
   --libdir=/usr/lib${LIBDIRSUFFIX} \
   --sysconfdir=/etc \
-  --localstatedir=/var \
+  --localstatedir=/var/lib \
+  --disable-silent-rules \
+  --enable-introspection \
   --mandir=/usr/man \
-  --infodir=/usr/info \
-  --buildtype=release
+  --docdir=/usr/doc/$PKGNAM-$VERSION \
+  --build=$ARCH-slackware-linux
 
-ninja
-DESTDIR=$PKG ninja install
+make $NUMJOBS || make || exit 1
+make install DESTDIR=$PKG || exit 1
 
-cd ..
+# Compress and link manpages, if any:
+if [ -d $PKG/usr/man ]; then
+  ( cd $PKG/usr/man
+    for manpagedir in $(find . -type d -name "man*") ; do
+      ( cd $manpagedir
+        for eachpage in $( find . -type l -maxdepth 1) ; do
+          ln -s $( readlink $eachpage ).gz $eachpage.gz
+          rm $eachpage
+        done
+        gzip -9 *.?
+      )
+    done
+  )
+fi
 
-find $PKG -print0 | xargs -0 file | grep -e "executable" -e "shared object" | grep ELF \
-  | cut -f 1 -d : | xargs strip --strip-unneeded 2> /dev/null || true
+mkdir -p $PKG/usr/doc/$PKGNAM-$VERSION
+cp -a \
+  COPYING NEWS README \
+  $PKG/usr/doc/$PKGNAM-$VERSION
 
-find $PKG/usr/man -type f -exec gzip -9 {} \;
-for i in $( find $PKG/usr/man -type l ) ; do ln -s $( readlink $i ).gz $i.gz ; rm $i ; done
-
-find $PKG -name perllocal.pod \
-  -o -name ".packlist" \
-  -o -name "*.bs" \
-  | xargs rm -f
+# If there's a ChangeLog, installing at least part of the recent history
+# is useful, but don't let it get totally out of control:
+if [ -r ChangeLog ]; then
+  DOCSDIR=$(echo $PKG/usr/doc/${PKGNAM}-$VERSION)
+  cat ChangeLog | head -n 1000 > $DOCSDIR/ChangeLog
+  touch -r ChangeLog $DOCSDIR/ChangeLog
+fi
 
 mkdir -p $PKG/install
 cat $CWD/slack-desc > $PKG/install/slack-desc
 cat $CWD/doinst.sh > $PKG/install/doinst.sh
 
 cd $PKG
-/sbin/makepkg -l y -c n $OUTPUT/$PKGNAM-$VERSION-$ARCH-$BUILD$TAG.${PKGTYPE:-txz}
+/sbin/makepkg -l y -c n $OUTPUT/$PKGNAM-$VERSION-$ARCH-$BUILD$TAG.txz

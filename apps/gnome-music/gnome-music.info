@@ -1,0 +1,5 @@
+PKGNAM="gnome-music"
+VERSION="3.34.0"
+HOMEPAGE="https://wiki.gnome.org/Apps/Music"
+DOWNLOAD="https://download.gnome.org/core/3.34/3.34.1/sources/gnome-music-3.34.0.tar.xz"
+MD5SUM="08252c04c03e7e2e8560d811db5715a2"

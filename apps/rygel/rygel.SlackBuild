@@ -1,7 +1,6 @@
 #!/bin/sh
 
-# Copyright 2016 Eugene Wissner Dachau, Germany
-# Copyright 2015  Bart van der Hall, Almere, NL
+# Copyright 2014, 2015  Bart van der Hall, Almere, NL
 # All rights reserved.
 #
 #   Permission to use, copy, modify, and distribute this software for
@@ -23,8 +22,8 @@
 #   SUCH DAMAGE.
 # -----------------------------------------------------------------------------
 
-PKGNAM=mutter
-VERSION=${VERSION:-$(echo $PKGNAM-*.tar.?z* | rev | cut -f 3- -d . | cut -f 1 -d - | rev)}
+PKGNAM=rygel
+VERSION=${VERSION:-0.36.1}
 BUILD=${BUILD:-1}
 TAG=${TAG:-_dlack}
 
@@ -74,34 +73,20 @@ find . \
  \( -perm 666 -o -perm 664 -o -perm 600 -o -perm 444 -o -perm 440 -o -perm 400 \) \
  -exec chmod 644 {} \;
 
-patch -p1 -E --backup --verbose -i ${CWD}/3.32-eglmesaext-include.patch
-
-# Configure, build, and install:
-export CFLAGS="$SLKCFLAGS"
-export CXXFLAGS="$SLKCFLAGS"
-mkdir meson-build
-cd meson-build
-meson setup \
+CFLAGS="$SLKCFLAGS" \
+CXXFLAGS="$SLKCFLAGS" \
+./configure \
   --prefix=/usr \
-  --libdir=lib${LIBDIRSUFFIX} \
-  --libexecdir=/usr/libexec \
-  --bindir=/usr/bin \
-  --sbindir=/usr/sbin \
-  --includedir=/usr/include \
-  --datadir=/usr/share \
-  --mandir=/usr/man \
+  --libdir=/usr/lib${LIBDIRSUFFIX} \
   --sysconfdir=/etc \
+  --mandir=/usr/man \
   --localstatedir=/var/lib \
-  --buildtype=release \
-  -Dprofiler=false \
-  .. || exit 1
-  "${NINJA:=ninja}" $NUMJOBS || exit 1
-  DESTDIR=$PKG $NINJA install || exit 1
+  --enable-gst-launch-plugin \
+  --docdir=/usr/doc/$PKGNAM-$VERSION \
+  --build=$ARCH-slackware-linux
 
-cd ..
-
-# Don't ship .la files:
-rm -f $PKG/usr/lib${LIBDIRSUFFIX}/*.la
+make $NUMJOBS
+make install DESTDIR=$PKG
 
 # Strip binaries:
 find $PKG -print0 | xargs -0 file | grep -e "executable" -e "shared object" | grep ELF \
@@ -116,7 +101,6 @@ cat $CWD/$PKGNAM.SlackBuild > $PKG/usr/doc/$PKGNAM-$VERSION/$PKGNAM.SlackBuild
 
 mkdir -p $PKG/install
 cat $CWD/slack-desc > $PKG/install/slack-desc
-cat $CWD/doinst.sh > $PKG/install/doinst.sh
 
 cd $PKG
 /sbin/makepkg -l y -c n $OUTPUT/$PKGNAM-$VERSION-$ARCH-$BUILD$TAG.txz

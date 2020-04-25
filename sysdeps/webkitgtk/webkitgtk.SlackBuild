@@ -83,6 +83,8 @@ sed -i '/stdbool.h/ a#include <uchar.h>' \
 #Fix build with Icu65.1
 patch -p1 -E --backup --verbose -i ${CWD}/icu65_1.patch
 
+patch -p1 -E --backup --verbose -i ${CWD}/webkit-gtk-2.24.4-eglmesaext-include.patch
+
 CFLAGS="$SLKCFLAGS -Wno-expansion-to-defined" \
 CXXFLAGS="$SLKCFLAGS -Wno-expansion-to-defined" \
 mkdir build

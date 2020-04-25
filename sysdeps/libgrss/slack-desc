@@ -1,0 +1,19 @@
+# HOW TO EDIT THIS FILE:
+# The "handy ruler" below makes it easier to edit a package description.  Line
+# up the first '|' above the ':' following the base package name, and the '|'
+# on the right side marks the last column you can put a character in.  You must
+# make exactly 11 lines for the formatting to be correct.  It's also
+# customary to leave one space after the ':'.
+
+       |-----handy-ruler------------------------------------------------------|
+libgrss: libgrss ( management of RSS and Atom feeds )
+libgrss:
+libgrss: includes methods to fetch, parse and handle XML documents, 
+libgrss: an implementation of PubSubHubBub client, an OPML parser and some 
+libgrss: more utility.
+libgrss:
+libgrss: libgrss is written in C, and
+libgrss:
+libgrss: is licensed under the LGPL 3,or (at your option) any later version.
+libgrss:
+libgrss:
