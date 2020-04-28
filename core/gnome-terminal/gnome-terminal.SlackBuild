@@ -74,7 +74,17 @@ find . \
  \( -perm 666 -o -perm 664 -o -perm 600 -o -perm 444 -o -perm 440 -o -perm 400 \) \
  -exec chmod 644 {} \;
 
+patch -p1 -E --backup --verbose -i ${CWD}/nautilus-x11.patch
+patch -p1 -E --backup --verbose -i ${CWD}/01_onlyshowin.patch
+patch -p1 -E --backup --verbose -i ${CWD}/Don-t-allow-the-theme-to-set-black-on-black.patch
+patch -p1 -E --backup --verbose -i ${CWD}/Provide-fallback-for-reading-current-directory-if-OS.patch
 patch -p1 -E --backup --verbose -i ${CWD}/0001-Restore-transparency.patch
+patch -p1 -E --backup --verbose -i ${CWD}/0001-Add-style-classes-and-CSS-names-to-some-of-our-widge.patch
+patch -p1 -E --backup --verbose -i ${CWD}/0001-screen-window-Extra-padding-around-transparent-termi.patch
+patch -p1 -E --backup --verbose -i ${CWD}/52_support_apturl.patch
+patch -p1 -E --backup --verbose -i ${CWD}/60_add_lp_handler.patch
+patch -p1 -E --backup --verbose -i ${CWD}/scrollbar-background-theming.patch
+
 
 CFLAGS="$SLKCFLAGS" \
 CXXFLAGS="$SLKCFLAGS" \
